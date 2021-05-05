@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException; 
 import org.apache.lucene.analysis.standard.StandardAnalyzer; 
 import org.apache.lucene.document.Document; 
-import org.apache.lucene.index.CorruptIndexException; 
-import org.apache.lucene.queryParser.ParseException; 
-import org.apache.lucene.queryParser.QueryParser; 
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.surround.parser.ParseException;
 import org.apache.lucene.search.IndexSearcher; 
 import org.apache.lucene.search.Query; 
 import org.apache.lucene.search.ScoreDoc; 
@@ -28,8 +28,7 @@ public class Searcher
 				LuceneConstants.CONTENTS, 
 				new StandardAnalyzer(Version.LUCENE_36));
 	} 
-	public TopDocs search( String searchQuery) throws IOException, ParseException
-	{ 
+	public TopDocs search( String searchQuery) throws IOException, ParseException, org.apache.lucene.queryparser.classic.ParseException { 
 		query = queryParser.parse(searchQuery); 
 		return indexSearcher.search(query, LuceneConstants.MAX_SEARCH); 
 	} 
