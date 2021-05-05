@@ -1,4 +1,4 @@
-package com.prabhakar.lucene;
+package lucene;
 
 public class LuceneConstants
 {

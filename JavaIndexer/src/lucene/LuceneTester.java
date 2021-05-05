@@ -1,11 +1,13 @@
-package com.prabhakar.lucene;
+package lucene;
 
-import java.io.IOException; 
-import org.apache.lucene.document.Document; 
-import org.apache.lucene.queryParser.ParseException; 
-import org.apache.lucene.search.ScoreDoc; 
-import org.apache.lucene.search.TopDocs; 
-public class LuceneTester 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
+
+import java.io.IOException;
+
+public class LuceneTester
 { 
 	String indexDir = "E:\\USF\\Study\\Big Data\\Lucene tutorial\\Index"; String dataDir = "E:\\USF\\Study\\Big Data\\Lucene tutorial\\Data"; 
 	Indexer indexer; 
