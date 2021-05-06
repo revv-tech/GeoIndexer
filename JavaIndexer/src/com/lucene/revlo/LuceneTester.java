@@ -18,8 +18,10 @@ import com.lucene.revlo.TextFileFilter;
 
 public class LuceneTester {
 
-    String indexDir = "C:\\lucene-3.6.2\\ProductIndex";
-    String dataDir = "C:\\lucene-3.6.2\\ProductData";
+    //PATH NAME HERE
+    String indexDir = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult";
+    //DATA DIRECTORY
+    String dataDir = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\América\\Estados_soberanos";
     Indexer indexer;
     Searcher searcher;
 
