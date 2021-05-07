@@ -15,17 +15,16 @@ import org.apache.lucene.search.TopDocs;
 import com.lucene.revlo.Indexer;
 import com.lucene.revlo.TextFileFilter;
 
-
 public class LuceneTester {
 
     //PATH NAME HERE
-    String indexDir = "...\\GeoIndexer\\JavaIndexer\\IndexConsult";
+    String indexDir = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult";
     //DATA DIRECTORY
-    String dataDir = "...\\Geografia\\América\\Estados_soberanos";
+    String dataDir = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\América\\Estados_soberanos";
     Indexer indexer;
     Searcher searcher;
 
-    /*public static void main(String[] args) {
+    public static void main(String[] args) {
         LuceneTester tester;
 
         try {
@@ -72,7 +71,7 @@ public class LuceneTester {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
     private void createIndex() throws IOException{
         indexer = new Indexer(indexDir);

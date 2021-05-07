@@ -1,24 +1,16 @@
 package main;
+import archive.ArchiveManager;
 
-import com.lucene.revlo.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) {
-        String[] names = {"No"};
-        names = new String[3];
+    public static void main(String[] args) throws IOException {
+        System.out.println("Hola mundo");
 
-        names[0] = "Sebas";
-        names[1] = "Fish";
-        names[2] = "Terry";
-
-        for (int i = 0; i < names.length; i++)
-            System.out.println(names[i]);
-
-        names = new String[10];
-
-        for (int i = 0; i < names.length; i++)
-            System.out.println(names[i]);
+        ArchiveManager test = new ArchiveManager("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\África\\Dependencias\\Mayotte.htm");
+        test.prueba();
+        String fileName = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\África\\Dependencias\\Mayotte.htm";
 
     }
-
 }
