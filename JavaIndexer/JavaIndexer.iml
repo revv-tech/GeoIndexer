@@ -10,11 +10,17 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-
           <root url="jar://$MODULE_DIR$/../lucene-core-3.6.2.jar!/" />
-
           <root url="jar://$MODULE_DIR$/../../../Source/lucene-core-8.8.2.jar!/" />
-
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../Source/jsoup-1.13.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
