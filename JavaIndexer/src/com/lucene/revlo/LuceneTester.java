@@ -21,7 +21,7 @@ public class LuceneTester {
     //PATH NAME HERE
     String indexDir = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult";
     //DATA DIRECTORY
-    String dataDir = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\América\\Estados_soberanos";
+    String dataDir = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\América\\Estados_soberanos./";
     Indexer indexer;
     Searcher searcher;
 
