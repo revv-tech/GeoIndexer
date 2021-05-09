@@ -14,6 +14,7 @@ import org.apache.lucene.util.Version;
 
 public class Indexer {
     private IndexWriter writer;
+
     public Indexer(String indexDirectoryPath) throws IOException{
         //this directory will contain the indexes
         Directory indexDirectory =
@@ -23,6 +24,7 @@ public class Indexer {
                 new StandardAnalyzer(Version.LUCENE_36),true,
                 IndexWriter.MaxFieldLength.UNLIMITED);
     }
+
     public void close() throws CorruptIndexException, IOException{
         writer.close();
     }
