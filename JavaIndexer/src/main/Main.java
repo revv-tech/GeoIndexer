@@ -9,9 +9,9 @@ public class Main {
     public static void main(String[] args) throws IOException {
         System.out.println("Hola mundo");
 
-        ArchiveManager test = new ArchiveManager("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia");
-        ArchiveManager.indexHTMLs("Asia");
-
+        ArchiveManager index = new ArchiveManager();
+        index.index_HTMLS("Asia");
+        index.searchQuery();
     }
 
 }

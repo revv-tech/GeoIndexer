@@ -23,8 +23,7 @@ public class Searcher {
     Query query;
 
     public Searcher(String indexDirectoryPath) throws IOException{
-        Directory indexDirectory =
-                FSDirectory.open(new File(indexDirectoryPath));
+        Directory indexDirectory = FSDirectory.open(new File(indexDirectoryPath));
         indexSearcher = new IndexSearcher(indexDirectory);
         queryParser = new QueryParser(Version.LUCENE_36,
                 LuceneConstants.CONTENTS,

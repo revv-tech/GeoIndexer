@@ -3,162 +3,153 @@ package archive;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
+
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.StandardDirectoryReader;
+
+import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.jsoup.Jsoup;
 
 
+import java.awt.*;
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
 
 public class ArchiveManager {
 
-    // Directory String
-    String directory;
-    // File de Directorio
-    static File directoryPath;
-    // Lista de Subdirectorios
-    File listDirectory[];
-    // Lista de Files
-    File listDirectoryFiles[];
-    //
-    static ArrayList queue = new ArrayList();
-    //
-    static IndexWriter writer;
-    static StandardAnalyzer analyzer;
+    StandardAnalyzer analyzer;
+    Directory index;
+    File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult");
+    IndexWriterConfig config;
+    IndexWriter writer;
+    int count = 0;
     static File stopwords = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\stopwords.txt");
 
-    public ArchiveManager(String directory) throws IOException {
-        this.directory = directory;
-        this.directoryPath = new File(directory);
-        this.listDirectory = directoryPath.listFiles();
-        //Analizador
-        StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30,stopwords);
+    public void ArchiveManager() throws IOException{}
 
-    }
-
-    public static void indexHTMLs(String continent) throws IOException {
-
-
-
-        //Directorio
-        FSDirectory dir = FSDirectory.open(directoryPath);
-
-        //Escritor del Index
-        IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_30, analyzer);
-        writer = new IndexWriter(dir,config);
-
-        File directory = new File(directoryPath + "\\" + continent);
-        addFiles(directory);
-
-        int numDocs = writer.numDocs();
-        for (Object f : queue){
-            FileReader fr = null;
-
-            try {
-                Document doc = new Document();
-                fr = new FileReader((File) f);
-                doc.add(new TextField("contents", fr));
-                doc.add(new StringField("path", ((File) f).getPath(), Field.Store.YES));
-                doc.add(new StringField("filename", ((File) f).getName(), Field.Store.YES));
-
-                writer.addDocument(doc);
-                System.out.println("Documento Agregado");
-            }catch (Exception e){
-                System.out.println("No agregado" + f);
-            }finally {
-
-                fr.close();
-
-            }
-
-        }
-
-
-        int newNumDocs = writer.numDocs();
-        System.out.println(newNumDocs - numDocs + " documentos agregados!") ;
-
-
+    public void index_HTMLS(String continent) throws IOException {
+        analyzer = new StandardAnalyzer(Version.LUCENE_36);
+        index = FSDirectory.open(indexDirectoryPath);
+        config = new IndexWriterConfig(Version.LUCENE_36,analyzer);
+        writer = new IndexWriter(index, config);
+        addFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent));
+        System.out.println("RAM kilobytes used: " + this.writer.ramSizeInBytes()/1000);
+        writer.close();
     }
 
 
 
     //Agrega el archivo al index
-    static public void addFiles(File file){
-        if (!file.exists()){
-            System.out.println("Non existent");
-        }
-        if (file.isDirectory()){
-            for (File f : file.listFiles())
+    public void addFiles(File file) throws IOException {
+        if (file.isDirectory()) {
+            System.out.println("Indexando " + file.getName() + "...........");
+            File[] fileList = file.listFiles();
+            for (File f : fileList) {
                 addFiles(f);
+                System.out.println(f.getName() + " ha sido agregado al index!");
+            }
         }
-        else{
-
-            String filename = file.getName().toLowerCase(Locale.ROOT);
-
-            if (filename.endsWith(".htm") || filename.endsWith("html"))
-                queue.add(file);
-
-        }
-    }
-
-    //
-    public void closeIndex() throws  IOException{
-        writer.close();
-    }
-
-    public void searcherHTML(String continent) throws IOException {
-
-        String indexDir = "C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult";
-        IndexReader reader = StandardDirectoryReader.open(FSDirectory.open(new File(indexDir)));
-        IndexSearcher searcher = new IndexSearcher(reader);
-        TopScoreDocCollector collector = TopScoreDocCollector.create(5,true);
-
-        String query = "";
-
-        InputStreamReader isr = new InputStreamReader(System.in);
-        BufferedReader br = new BufferedReader(isr);
-
-        while (!query.equalsIgnoreCase("a")){
-
+        else if (!file.isHidden() && file.exists() && file.canRead()) {
+            //make doc
+            Document doc = getDocument(file);
             try {
-                System.out.println("Introduzca su consulta (a = salir): ");
-                br.readLine();
-
-                if (query.equalsIgnoreCase("a"))
-                    break;
-                Query q = new QueryParser(Version.LUCENE_30, query, analyzer).parse(query);
-                searcher.search(q, collector);
-                ScoreDoc[] hits = collector.topDocs().scoreDocs;
-
-                System.out.println("Se encontraron " + "docs!");
-                for (int i = 0; i < hits.length; ++i) {
-                    int docID = hits[i].doc;
-                    Document d = searcher.doc(docID);
-                    System.out.println((i + 1) + ". " + d.get("path") + " score = " + hits[i].score);
-                }
-            }catch (Exception e){
-                    System.out.println("Error buscando la consulta!");
-                }
-
+                //add doc to writer
+                writer.addDocument(doc);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
 
     }
 
+    //Parser
+    private Document getDocument(File file) {
+        Document doc = new Document();
+
+        try {
+            //Parse file and add body and title to doc
+            org.jsoup.nodes.Document soupDoc = Jsoup.parse(file, "UTF-8");
+            String body = soupDoc.getElementsByTag("body").text();
+            String title = soupDoc.getElementsByTag("title").text();
+            String h1 = soupDoc.getElementsByTag("h1").text();
+            String h2 = soupDoc.getElementsByTag("h2").text();
+            String h3 = soupDoc.getElementsByTag("h3").text();
+            String b = soupDoc.getElementsByTag("b").text();
+            addDocument(doc, "body", body, 1);
+            addDocument(doc, "title", title, 2);
+            addDocument(doc, "url", file.getAbsolutePath(), 1);
+            addDocument(doc, "h1", h1, 1.5f);
+            addDocument(doc, "h2", h2, 1.25f);
+            addDocument(doc, "h3", h3, 1.15f);
+            addDocument(doc, "b", b, 1.1f);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            return doc;
+        }
+        return doc;
+    }
+
+    private void addDocument(Document doc, String fieldTitle, String field, float boost) {
+        Field temp  = new Field(fieldTitle,field,Field.Store.YES,Field.Index.NOT_ANALYZED);
+        temp.setBoost(boost);
+        doc.add(temp);
+    }
+
+    public void searchQuery(){
+        System.out.print("Introduzca su consulta: ");
+        Scanner s = new Scanner(System.in);
+        String querystr = s.nextLine();
+        try {
+            //Create Query
+            Query q = new MultiFieldQueryParser(Version.LUCENE_36,new String[] {"title", "body", "h1", "h2", "h3", "b"}, analyzer).parse(querystr);
+			System.out.println(q.toString());
+            //Create Lucene searcher
+            Directory reader =  FSDirectory.open(new File(indexDirectoryPath.getAbsolutePath()));
+            IndexSearcher searcher = new IndexSearcher(reader);
+
+            //Get top 5 docs from search results
+            TopDocs retrievedDocs = searcher.search(q, 5);
+            ScoreDoc[] results = retrievedDocs.scoreDocs;
+            System.out.println();
+            System.out.println("=================================================");
+            System.out.println("Search Results For " + querystr);
+            System.out.println("=================================================");
+            //Get top 5 docs from results
+            for(int i=0; i<results.length; ++i) {
+                int docID = results[i].doc;
+                Document d = searcher.doc(docID);
+                System.out.println((i + 1) + ") " + d.get("title"));
+                System.out.println("   " + d.get("url"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //Check if user wants to search again
+        System.out.print("Search again? (y/n) ");
+        querystr = s.nextLine();
+        if (querystr.trim().toLowerCase().equals("y")) {
+            searchQuery();
+        }
+        s.close();
+    }
 }
+
+
+
 

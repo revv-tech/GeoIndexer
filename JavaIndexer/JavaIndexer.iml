@@ -7,16 +7,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../lucene-core-3.6.2.jar!/" />
-          <root url="jar://$MODULE_DIR$/../../../Source/lucene-core-8.8.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
@@ -26,10 +16,20 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../lucene-core-3.6.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="jar://$MODULE_DIR$/../lucene-core-3.6.2.jar!/" recursive="false" />
+      </library>
+    </orderEntry>
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../lucene-8.8.2/core/lucene-core-8.8.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/../lucene-3.6.2/lucene-core-3.6.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
