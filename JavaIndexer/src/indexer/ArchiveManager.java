@@ -1,4 +1,4 @@
-package archive;
+package indexer;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -23,7 +23,11 @@ import java.util.Scanner;
 
 
 public class ArchiveManager {
+    // H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult
+    // H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\stopwords.txt
 
+    // C:\Users\Marco\Desktop\Documentos TEC\GeoIndexer\JavaIndexer\IndexConsult
+    // C:\Users\Marco\Desktop\Documentos TEC\GeoIndexer\JavaIndexer\stopwords.txt
     StandardAnalyzer analyzer;
     Directory index;
     File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult");
