@@ -14,12 +14,12 @@ public class Query implements StringManager{
         if (query.contains("\"")) {
             sentence = query.split("\"");
             sentence = StringManager.removeElements(sentence, "");
-
+            setTermsWithQuotes(sentence);
         }
         else {
             sentence = query.split(" ");
             sentence = StringManager.removeElements(sentence, "");
-
+            setTermsWithKeys(sentence);
         }
     }
 
@@ -28,7 +28,7 @@ public class Query implements StringManager{
     }
 
     private void setTermsWithQuotes(String[] sentence) {
-        
+
     }
 
     private void setTermsWithKeys(String[] sentence) {
