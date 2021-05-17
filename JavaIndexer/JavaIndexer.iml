@@ -18,12 +18,11 @@
     </orderEntry>
     <orderEntry type="module-library">
       <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../lucene-core-3.6.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
+        <CLASSES />
+        <JAVADOC>
+          <root url="jar://$MODULE_DIR$/../lucene-3.6.2/lucene-core-3.6.2-javadoc.jar!/" />
+        </JAVADOC>
         <SOURCES />
-        <jarDirectory url="jar://$MODULE_DIR$/../lucene-core-3.6.2.jar!/" recursive="false" />
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
