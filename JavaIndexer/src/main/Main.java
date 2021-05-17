@@ -10,6 +10,7 @@ public class Main {
         index.creator_();
         index.index_Files("África");
         index.searchQuery();
+        index.index_Files("Asia");
 
 
     }

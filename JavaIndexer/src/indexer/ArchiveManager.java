@@ -32,6 +32,7 @@ public class ArchiveManager {
     File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult");
     IndexWriterConfig config;
     IndexWriter writer;
+    File stopwordsF = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\stopwords.txt");
     String stopwords[] = {
             "a",
             "acá",
@@ -387,9 +388,10 @@ public class ArchiveManager {
         analyzer = new StandardAnalyzer(Version.LUCENE_36);
         //Lugar en donde se almacena los docs del index
         index = FSDirectory.open(indexDirectoryPath);
+
         //Escritor del index
         config = new IndexWriterConfig(Version.LUCENE_36,analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-        writer = new IndexWriter(index, analyzer,true, new IndexWriter.MaxFieldLength(25000));
+        writer = new IndexWriter(index, config);
 
     }
 
@@ -399,12 +401,12 @@ public class ArchiveManager {
         if (!directoriosAgregados.contains(continent)) {
             directoriosAgregados.add(continent);
             // Agrega los files al index
-            addFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent),writer);
+            addFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent), writer);
 
         }
         else{
             IndexWriter newIndex = new IndexWriter(index, writer.getConfig());
-            addFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent),newIndex);
+            addFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent), newIndex);
 
         }
         for (int i = 0; i < directoriosAgregados.size(); ++i)
@@ -465,11 +467,10 @@ public class ArchiveManager {
             String summary = soupDoc.getElementsByTag("p").text().substring(0,200);
             //Texto
             String texto = soupDoc.getElementsByTag("p").text().toLowerCase();
+            texto = removeStopWordsAndStem(texto);
             //Normalizacion
             texto = Normalizer.normalize(texto,Normalizer.Form.NFKD);
             texto = texto.replaceAll("[^\\p{ASCII}]", "");
-            texto = removeStopWordsAndStem(texto);
-            //System.out.println(texto);
             //Ref
             String a = soupDoc.getElementsByTag("a").text().toLowerCase().toLowerCase();
             //Control de vocales en Ref
@@ -486,8 +487,6 @@ public class ArchiveManager {
             addDocument(doc, "ref", a, 1.5f);
             addDocument(doc,"texto",texto,1);
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -518,14 +517,13 @@ public class ArchiveManager {
             IndexReader r = IndexReader.open(indexDirectory);
             IndexSearcher searcher = new IndexSearcher(r);
             TopDocs retrievedDocs = searcher.search(q,null,20);
-
             ScoreDoc[] results = retrievedDocs.scoreDocs;
             System.out.println(results.length);
             System.out.println();
             System.out.println("=================================================");
             System.out.println("Search Results For " + querystr);
             System.out.println("=================================================");
-            //Get top 5 docs from results
+
 
             for(int i=0; i<results.length; ++i) {
 
@@ -560,7 +558,7 @@ public class ArchiveManager {
     public String removeStopWordsAndStem(String input) throws IOException {
         TokenStream tokenStream = new StandardTokenizer(
                 Version.LUCENE_36, new StringReader(input));
-        tokenStream = new StopFilter(true, tokenStream, Collections.singleton(stopwords));
+        tokenStream = new StopFilter(Version.LUCENE_36, tokenStream, StopFilter.makeStopSet(Version.LUCENE_36,stopwords));
         tokenStream = new PorterStemFilter(tokenStream);
         StringBuilder sb = new StringBuilder();
         TermAttribute termAttr = tokenStream.getAttribute(TermAttribute.class);
