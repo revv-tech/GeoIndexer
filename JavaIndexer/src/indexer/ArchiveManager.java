@@ -4,6 +4,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PorterStemFilter;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.document.Document;
@@ -15,8 +16,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.jsoup.Jsoup;
-
-
 import java.io.*;
 import java.text.Normalizer;
 import java.util.*;
@@ -385,8 +384,7 @@ public class ArchiveManager {
     //Indexa HTMLs de acuerdo al continente dado
     public void creator_() throws IOException {
         //Crea analizador NECESARIO PARA LUCENE BUSQUEDAR E INDEXAR con stopwords
-
-        analyzer = new MyAnalyzer();
+        analyzer = new StandardAnalyzer(Version.LUCENE_36);
         //Lugar en donde se almacena los docs del index
         index = FSDirectory.open(indexDirectoryPath);
         //Escritor del index
@@ -411,6 +409,7 @@ public class ArchiveManager {
         }
         for (int i = 0; i < directoriosAgregados.size(); ++i)
             System.out.println(directoriosAgregados.get(i) + " ha sido indexado!");
+        writer.close();
 
     }
 
@@ -432,6 +431,7 @@ public class ArchiveManager {
             }
 
         }
+
         //Si es html lo indexa
         else if (!file.isHidden() && file.exists() && file.canRead()) {
 
@@ -517,7 +517,6 @@ public class ArchiveManager {
             Directory indexDirectory = FSDirectory.open(indexDirectoryPath);
             IndexReader r = IndexReader.open(indexDirectory);
             IndexSearcher searcher = new IndexSearcher(r);
-
             TopDocs retrievedDocs = searcher.search(q,null,20);
 
             ScoreDoc[] results = retrievedDocs.scoreDocs;
@@ -539,6 +538,7 @@ public class ArchiveManager {
             searcher.close();
             r.close();
 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -550,7 +550,6 @@ public class ArchiveManager {
         if (querystr.trim().toLowerCase().equals("y")) {
             searchQuery();
         }
-
     }
 
     public void closeWriter() throws IOException {

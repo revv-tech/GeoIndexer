@@ -1,6 +1,6 @@
 package queries;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Arrays;
 
@@ -17,7 +17,7 @@ public class Query implements StringManager {
         return terminos;
     }
 
-    public void setTerminos(@NotNull String query) {
+    public void setTerminos(String query) {
         String[] sentence;
         if (query.contains("\"")) {
             sentence = query.split("\"");
