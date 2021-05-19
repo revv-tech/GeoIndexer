@@ -33,6 +33,7 @@ public class ArchiveManager {
     Directory index;
     IndexWriterConfig config;
     IndexWriter writerGeneral;
+    IndexWriter writerTmp;
     String stopwords[] = {
             "a",
             "acá",
@@ -387,12 +388,58 @@ public class ArchiveManager {
         analyzer = new StandardAnalyzer(Version.LUCENE_36);
         //Lugar en donde se almacena los docs del index
         index = FSDirectory.open(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\General"));
-
+        FSDirectory indexTmp = FSDirectory.open(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
         //Escritor del index
         config = new IndexWriterConfig(Version.LUCENE_36,analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         writerGeneral = new IndexWriter(index,analyzer,true, IndexWriter.MaxFieldLength.UNLIMITED);
-
+        writerTmp = new IndexWriter(indexTmp,analyzer,true, IndexWriter.MaxFieldLength.UNLIMITED);
     }
+    public void mergeIndexes() throws IOException {
+
+        deleteFiles(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
+        Scanner s = new Scanner(System.in);
+        System.out.println("Introduzca la cantidad de continentes que desea indexar: ");
+        int length = s.nextInt();
+        String  continents[] = new String[length];
+        System.out.println("Introduzca los continentes: ");
+
+        for(int i=0; i<length; i++ ) {
+            continents[i] = s.nextLine();
+        }
+
+        System.out.println(Arrays.toString(continents));
+
+        for (int i = 0 ; i < continents.length ; i++ ) {
+            File archivo = new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + continents[i]);
+            Directory indexAux = FSDirectory.open(archivo);
+            addFiles(archivo,writerTmp);
+            writerTmp.addIndexes(indexAux);
+
+        }
+        writerTmp.optimize();
+        writerTmp.close();
+        System.out.println("Index creado!");
+    }
+
+    public void addTmpToGeneral() throws IOException {
+        Directory indexTmp = FSDirectory.open(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
+        writerGeneral.addIndexes(indexTmp);
+        writerGeneral.optimize();
+        writerGeneral.close();
+    }
+
+    //Elimina los archivos
+    public static void deleteFiles(File dirPath) {
+        File filesList[] = dirPath.listFiles();
+        for(File file : filesList) {
+            if(file.isFile()) {
+                file.delete();
+            } else {
+                deleteFiles(file);
+            }
+        }
+    }
+
 
     public void index_Files(String continent) throws IOException {
 
@@ -411,7 +458,7 @@ public class ArchiveManager {
             // Agrega los files al index
             addFiles(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent), writerTmp);
 
-            writerTmp.close();
+            //writerTmp.close();
             //Lo agrega a General
             /*writerGeneral.addIndexes(index);
             writerGeneral.optimize();*/

@@ -25,7 +25,7 @@ public class Main {
         System.out.println("*\t1. Indexar Carpeta");
         System.out.println("*\t2. Crear Consulta");
         System.out.println("*\t3. Combinar Indices");
-        System.out.println("*\t4. Vaciar Indices");
+        System.out.println("*\t4. Actualizar Index General");
         System.out.println("*\t0. Salir");
         System.out.println("*****************************************************************************************");
         System.out.println("***\tIngrese una opcion\t***");
@@ -39,9 +39,9 @@ public class Main {
             case 2:
                 archiveManager.searchQuery();
             case 3:
-                // Unir indices
+                archiveManager.mergeIndexes();
             case 4:
-                // Vaciar indices
+                archiveManager.addTmpToGeneral();
             case 0:
                 break;
             default:
