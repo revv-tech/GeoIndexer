@@ -36,13 +36,22 @@ public class Main {
                 System.out.println("***\tIntroduzca el nombre de la carpeta a indexar\t***");
                 String name = scnNameIdx.nextLine();
                 archiveManager.index_Files(name);
+                menu();
+                break;
             case 2:
                 archiveManager.searchQuery();
+                menu();
+                break;
             case 3:
                 archiveManager.mergeIndexes();
+                menu();
+                break;
             case 4:
                 archiveManager.addTmpToGeneral();
+                menu();
+                break;
             case 0:
+                menu();
                 break;
             default:
                 menu();

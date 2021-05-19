@@ -30,10 +30,8 @@ public class ArchiveManager {
     // C:\Users\Marco\Desktop\Documentos TEC\GeoIndexer\JavaIndexer\IndexConsult
     // C:\Users\Marco\Desktop\Documentos TEC\GeoIndexer\JavaIndexer\stopwords.txt
     Analyzer analyzer;
-    Directory index;
     IndexWriterConfig config;
     IndexWriter writerGeneral;
-    IndexWriter writerTmp;
     String stopwords[] = {
             "a",
             "acá",
@@ -384,45 +382,48 @@ public class ArchiveManager {
     public ArchiveManager() throws IOException{}
     //Indexa HTMLs de acuerdo al continente dado
     public void creator_() throws IOException {
+
         //Crea analizador NECESARIO PARA LUCENE BUSQUEDAR E INDEXAR con stopwords
         analyzer = new StandardAnalyzer(Version.LUCENE_36);
         //Lugar en donde se almacena los docs del index
-        index = FSDirectory.open(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\General"));
-        FSDirectory indexTmp = FSDirectory.open(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
+        Directory index = FSDirectory.open(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\General"));
+        FSDirectory indexTmp = FSDirectory.open(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
         //Escritor del index
         config = new IndexWriterConfig(Version.LUCENE_36,analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         writerGeneral = new IndexWriter(index,analyzer,true, IndexWriter.MaxFieldLength.UNLIMITED);
-        writerTmp = new IndexWriter(indexTmp,analyzer,true, IndexWriter.MaxFieldLength.UNLIMITED);
+
     }
     public void mergeIndexes() throws IOException {
 
-        deleteFiles(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
+        FSDirectory indexTmp = FSDirectory.open(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
+        deleteFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
+        IndexWriter writerTmpAux = new IndexWriter(indexTmp,analyzer,true, IndexWriter.MaxFieldLength.UNLIMITED);
         Scanner s = new Scanner(System.in);
         System.out.println("Introduzca la cantidad de continentes que desea indexar: ");
         int length = s.nextInt();
-        String  continents[] = new String[length];
-        System.out.println("Introduzca los continentes: ");
+        String  []continents = new String[length];
 
         for(int i=0; i<length; i++ ) {
-            continents[i] = s.nextLine();
+            System.out.println("Introduzca el continente #" + String.valueOf(i + 1 ));
+            continents[i] = s.next();
         }
 
         System.out.println(Arrays.toString(continents));
 
         for (int i = 0 ; i < continents.length ; i++ ) {
-            File archivo = new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + continents[i]);
+            index_Files(continents[i]);
+            File archivo = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + continents[i]);
             Directory indexAux = FSDirectory.open(archivo);
-            addFiles(archivo,writerTmp);
-            writerTmp.addIndexes(indexAux);
+            writerTmpAux.addIndexes(indexAux);
 
         }
-        writerTmp.optimize();
-        writerTmp.close();
+        writerTmpAux.optimize();
+        writerTmpAux.close();
         System.out.println("Index creado!");
     }
 
     public void addTmpToGeneral() throws IOException {
-        Directory indexTmp = FSDirectory.open(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
+        Directory indexTmp = FSDirectory.open(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
         writerGeneral.addIndexes(indexTmp);
         writerGeneral.optimize();
         writerGeneral.close();
@@ -443,30 +444,20 @@ public class ArchiveManager {
 
     public void index_Files(String continent) throws IOException {
 
+        File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\"+continent);
 
-        if (!directoriosAgregados.contains(continent)) {
+        //Lugar en donde se almacena los docs del index
+        Directory index = FSDirectory.open(indexDirectoryPath);
+        //Escritor del index
+        IndexWriterConfig configTmp = new IndexWriterConfig(Version.LUCENE_36,analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+        IndexWriter writerTmp = new IndexWriter(index,configTmp);
+        directoriosAgregados.add(continent);
+        // Agrega los files al index
+        File dir = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent);
+        System.out.println(dir.isDirectory());
+        addFiles(dir, writerTmp);
+        writerTmp.close();
 
-            File indexDirectoryPath = new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\"+continent);
-            //Crea analizador NECESARIO PARA LUCENE BUSQUEDAR E INDEXAR con stopwords
-            analyzer = new StandardAnalyzer(Version.LUCENE_36);
-            //Lugar en donde se almacena los docs del index
-            index = FSDirectory.open(indexDirectoryPath);
-            //Escritor del index
-            config = new IndexWriterConfig(Version.LUCENE_36,analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-            IndexWriter writerTmp = new IndexWriter(index, config);
-            directoriosAgregados.add(continent);
-            // Agrega los files al index
-            addFiles(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent), writerTmp);
-
-            //writerTmp.close();
-            //Lo agrega a General
-            /*writerGeneral.addIndexes(index);
-            writerGeneral.optimize();*/
-        }
-        else{
-            System.out.println("Ya ha sido indexado el directorio " + continent+ "!");
-
-        }
         System.out.println("-------------------------------------------------------------------------------------");
         for (int i = 0; i < directoriosAgregados.size(); ++i)
             System.out.println(directoriosAgregados.get(i) + " ha sido indexado!");
@@ -659,11 +650,10 @@ public class ArchiveManager {
         System.out.println("***\tIntroduzca el index que desea buscar\t***");
         Scanner x = new Scanner(System.in);
         String dir = x.nextLine();
-        File indexDirectoryPath = new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + dir);
+        File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + dir);
         System.out.println("***\tIntroduzca su consulta\t***");
         Scanner s = new Scanner(System.in);
         String querystr = s.nextLine();
-
         QueryInfo[] queries = queryAnalizer(querystr);
         ScoreDoc[] results = new ScoreDoc[0];
         IndexSearcher searcher = null;
