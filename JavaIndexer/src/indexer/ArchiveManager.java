@@ -19,13 +19,13 @@ import org.jsoup.Jsoup;
 import java.io.*;
 import java.text.Normalizer;
 import java.util.*;
-import Query.QueryInfo;
-import Query.*;
+import query.QueryInfo;
+import query.*;
 
 
 public class ArchiveManager {
     // H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult
-    // H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\stopwords.txt
+    // H:\Programming\Java\Code\GeoIndexer\\JavaIndexer\\stopwords.txt
 
     // C:\Users\Marco\Desktop\Documentos TEC\GeoIndexer\JavaIndexer\IndexConsult
     // C:\Users\Marco\Desktop\Documentos TEC\GeoIndexer\JavaIndexer\stopwords.txt
@@ -386,7 +386,7 @@ public class ArchiveManager {
         //Crea analizador NECESARIO PARA LUCENE BUSQUEDAR E INDEXAR con stopwords
         analyzer = new StandardAnalyzer(Version.LUCENE_36);
         //Lugar en donde se almacena los docs del index
-        index = FSDirectory.open(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\General"));
+        index = FSDirectory.open(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\General"));
 
         //Escritor del index
         config = new IndexWriterConfig(Version.LUCENE_36,analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
@@ -399,7 +399,7 @@ public class ArchiveManager {
 
         if (!directoriosAgregados.contains(continent)) {
 
-            File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\"+continent);
+            File indexDirectoryPath = new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\"+continent);
             //Crea analizador NECESARIO PARA LUCENE BUSQUEDAR E INDEXAR con stopwords
             analyzer = new StandardAnalyzer(Version.LUCENE_36);
             //Lugar en donde se almacena los docs del index
@@ -409,14 +409,12 @@ public class ArchiveManager {
             IndexWriter writerTmp = new IndexWriter(index, config);
             directoriosAgregados.add(continent);
             // Agrega los files al index
-            addFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent), writerTmp);
+            addFiles(new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\Geografia\\" + continent), writerTmp);
 
             writerTmp.close();
             //Lo agrega a General
-            writerGeneral.addIndexes(index);
-            writerGeneral.optimize();
-
-
+            /*writerGeneral.addIndexes(index);
+            writerGeneral.optimize();*/
         }
         else{
             System.out.println("Ya ha sido indexado el directorio " + continent+ "!");
@@ -543,6 +541,8 @@ public class ArchiveManager {
                 intersection = addScoreDoc(intersection, first);
             }
         }
+        Arrays.sort(intersection, new SortByScore());
+
         return intersection;
     }
 
@@ -564,6 +564,8 @@ public class ArchiveManager {
             else
                 union = addScoreDoc(union, second);
         }
+        Arrays.sort(union, new SortByScore());
+
         return union;
     }
     public QueryInfo[] queryAnalizer(String query) {
@@ -607,11 +609,11 @@ public class ArchiveManager {
         return result;
     }
     public void searchQuery() throws IOException {
-        System.out.print("Introduzca el index que desea buscar: ");
+        System.out.println("***\tIntroduzca el index que desea buscar\t***");
         Scanner x = new Scanner(System.in);
         String dir = x.nextLine();
-        File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + dir);
-        System.out.print("Introduzca su consulta: ");
+        File indexDirectoryPath = new File("H:\\Programming\\Java\\Code\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + dir);
+        System.out.println("***\tIntroduzca su consulta\t***");
         Scanner s = new Scanner(System.in);
         String querystr = s.nextLine();
 
