@@ -19,6 +19,8 @@ import org.jsoup.Jsoup;
 import java.io.*;
 import java.text.Normalizer;
 import java.util.*;
+import Query.QueryInfo;
+import Query.*;
 
 
 public class ArchiveManager {
@@ -512,10 +514,99 @@ public class ArchiveManager {
         temp.setBoost(boost);
         doc.add(temp);
     }
+    private QueryInfo[] addQuery(QueryInfo[] array, QueryInfo newQuery){
+        QueryInfo[] newArray = Arrays.copyOf(array, array.length + 1);
+        newArray[newArray.length - 1] = newQuery;
+        return newArray;
+    }
 
-    //Consulta simple. Hay que buscar como hacer otras consultas
+    private ScoreDoc[] addScoreDoc(ScoreDoc[] array, ScoreDoc scoreDoc) {
+        ScoreDoc[] newArray = Arrays.copyOf(array, array.length + 1);
+        newArray[newArray.length - 1] = scoreDoc;
+        return newArray;
+    }
+
+    public ScoreDoc[] getIntersection(ScoreDoc[] results1, ScoreDoc[] results2) {   // AND
+        ScoreDoc[] intersection = {};
+        for (ScoreDoc first : results1) {
+            boolean isEqual = false;
+            float secondScore = 0;
+            for (ScoreDoc second : results2) {
+                if (first.doc == second.doc) {
+                    isEqual = true;
+                    secondScore = second.score;
+                    break;
+                }
+            }
+            if (isEqual) {
+                first.score += secondScore;
+                intersection = addScoreDoc(intersection, first);
+            }
+        }
+        return intersection;
+    }
+
+    public ScoreDoc[] getUnion(ScoreDoc[] results1, ScoreDoc[] results2) {  // OR - NONE
+        ScoreDoc[] union = {};
+        for (ScoreDoc first : results1)
+            union = addScoreDoc(union, first);
+        for (ScoreDoc second : results2) {
+            boolean isEqual = false;
+            int u;
+            for (u = 0; u < union.length; u++) {
+                if (second.doc == union[u].doc) {
+                    isEqual = true;
+                    break;
+                }
+            }
+            if (isEqual)
+                union[u].score += second.score;
+            else
+                union = addScoreDoc(union, second);
+        }
+        return union;
+    }
+    public QueryInfo[] queryAnalizer(String query) {
+        QueryInfo[] result = {new QueryInfo(query)};
+        if (query.contains(":")){
+            result = new QueryInfo[]{};
+            SearchIn type;
+            int idx;
+
+            if (query.contains("\"")) {
+                idx = query.indexOf(':');
+                if (query.contains("ref:"))
+                    type = SearchIn.REFERENCE;
+                else
+                    type = SearchIn.BODY;
+                result = addQuery(result, new QueryInfo(query.substring(idx + 1),
+                        type,
+                        BooleanConnection.NONE));
+            } else {
+                String[] terms = query.split(" ", 0);
+                for (String term : terms) {
+                    if (term.contains("ref:")) {
+                        idx = term.indexOf(':');
+                        result = addQuery(result, new QueryInfo(term.substring(idx + 1),
+                                SearchIn.REFERENCE,
+                                BooleanConnection.NONE));
+                    } else if (term.contains("texto:")) {
+                        idx = term.indexOf(':');
+                        result = addQuery(result, new QueryInfo(term.substring(idx + 1),
+                                SearchIn.BODY,
+                                BooleanConnection.NONE));
+                    } else if (term.equals("AND"))
+                        result[result.length - 1].connection = BooleanConnection.AND;
+                    else if (term.equals("OR"))
+                        result[result.length - 1].connection = BooleanConnection.OR;
+                    else
+                        result = addQuery(result, new QueryInfo(term));
+                }
+            }
+        }
+        return result;
+    }
     public void searchQuery() throws IOException {
-        writerGeneral.close();
         System.out.print("Introduzca el index que desea buscar: ");
         Scanner x = new Scanner(System.in);
         String dir = x.nextLine();
@@ -524,51 +615,75 @@ public class ArchiveManager {
         Scanner s = new Scanner(System.in);
         String querystr = s.nextLine();
 
+        QueryInfo[] queries = queryAnalizer(querystr);
+        ScoreDoc[] results = new ScoreDoc[0];
+        IndexSearcher searcher = null;
+        IndexReader r = null;
+        int cont = 0;
         try {
+            for (int i = 0; i < queries.length; i++) {
+                Query q;
 
-            //Create Query
-            Query q = new MultiFieldQueryParser(Version.LUCENE_36,new String[] {"texto"}, analyzer).parse(querystr);
-			System.out.println(q.toString());
-            //Create Lucene searcher
-            Directory indexDirectory = FSDirectory.open(indexDirectoryPath);
-            IndexReader r = IndexReader.open(indexDirectory);
-            IndexSearcher searcher = new IndexSearcher(r);
-            TopDocs retrievedDocs = searcher.search(q,null,20);
-            ScoreDoc[] results = retrievedDocs.scoreDocs;
+                if (queries[i].type == SearchIn.BODY)
+                    q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"texto"}, analyzer).parse(queries[i].query);
+                else
+                    q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"a"}, analyzer).parse(queries[i].query);
+
+                System.out.println(q.toString());
+                //Create Lucene searcher
+                Directory indexDirectory = FSDirectory.open(indexDirectoryPath);
+                r = IndexReader.open(indexDirectory);
+                searcher = new IndexSearcher(r);
+                TopDocs retrievedDocs = searcher.search(q, null, 1000);
+                cont += retrievedDocs.totalHits;
+                ScoreDoc[] newResults = retrievedDocs.scoreDocs;
+
+                if (i > 0 && queries[i - 1].connection == BooleanConnection.AND)
+                    results = getIntersection(results, newResults);
+                else
+                    results = getUnion(results, newResults);
+            }
             System.out.println(results.length);
+
+            System.out.println("Encontro " + Integer.toString(cont) + " resultados");
             System.out.println();
             System.out.println("=================================================");
             System.out.println("Search Results For " + querystr);
             System.out.println("=================================================");
 
+            // Otra funcion
+            boolean nextPage = false;
+            int k = 0;
 
-            for(int i=0; i<results.length; ++i) {
+            do {
+                for (int i = 0; i < 20 && k < results.length; ++i, ++k) {
 
-                int docID = results[i].doc;
-                Document d = searcher.doc(docID);
-                System.out.println((i + 1) + ") " + d.get("title"));
-                System.out.println("   " + d.get("url"));
+                    int docID = results[k].doc;
+                    Document d = searcher.doc(docID);
+                    System.out.println(results[k].score);
+                    System.out.println((k + 1) + ") " + d.get("title"));
+                    System.out.println("   " + d.get("url"));
 
-            }
+                }
+                System.out.print("Search again? (y/n) ");
+                querystr = s.nextLine();
+                if (querystr.trim().equalsIgnoreCase("y") && k < results.length)
+                    nextPage = true;
+                else if (querystr.trim().equalsIgnoreCase("n") || k >= results.length)
+                    nextPage = false;
+            } while (nextPage);
+
             searcher.close();
             r.close();
-
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        s.close();
 
-
-        //Check if user wants to search again
-        System.out.print("Search again? (y/n) ");
-        querystr = s.nextLine();
-        if (querystr.trim().toLowerCase().equals("y")) {
-            searchQuery();
-        }
     }
 
-
-    //Stemming ---------------------------------------------------------------------
+        //Stemming ---------------------------------------------------------------------
     public String removeStopWordsAndStem(String input) throws IOException {
         TokenStream tokenStream = new StandardTokenizer(
                 Version.LUCENE_36, new StringReader(input));

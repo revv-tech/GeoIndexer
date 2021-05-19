@@ -9,10 +9,6 @@ public class Main {
         ArchiveManager index = new ArchiveManager();
         index.creator_();
         index.index_Files("África");
-
-        index.index_Files("Asia");
-
-        index.index_Files("América");
         index.searchQuery();
     }
 
