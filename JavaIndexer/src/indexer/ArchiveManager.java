@@ -443,7 +443,7 @@ public class ArchiveManager {
 
 
     public void index_Files(String continent) throws IOException {
-
+        deleteFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + continent));
         File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\"+continent);
 
         //Lugar en donde se almacena los docs del index
@@ -522,7 +522,7 @@ public class ArchiveManager {
             texto = Normalizer.normalize(texto,Normalizer.Form.NFKD);
             texto = texto.replaceAll("[^\\p{ASCII}]", "");
             //Ref
-            String a = soupDoc.getElementsByTag("a").text().toLowerCase().toLowerCase();
+            String a = soupDoc.getElementsByTag("a").text().toLowerCase();
             //Control de vocales en Ref
             a = a.replaceAll("[\b?á\b?]", "");
             a = a.replaceAll("[\b?í\b?]", "");
@@ -666,7 +666,7 @@ public class ArchiveManager {
                 if (queries[i].type == SearchIn.BODY)
                     q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"texto"}, analyzer).parse(queries[i].query);
                 else
-                    q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"a"}, analyzer).parse(queries[i].query);
+                    q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"ref"}, analyzer).parse(queries[i].query);
 
                 System.out.println(q.toString());
                 //Create Lucene searcher
@@ -718,7 +718,7 @@ public class ArchiveManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        s.close();
+
 
     }
 
