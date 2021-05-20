@@ -1,9 +1,6 @@
 package indexer;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.PorterStemFilter;
-import org.apache.lucene.analysis.StopFilter;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.*;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
@@ -390,7 +387,8 @@ public class ArchiveManager {
         FSDirectory indexTmp = FSDirectory.open(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
         //Escritor del index
         config = new IndexWriterConfig(Version.LUCENE_36,analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-        writerGeneral = new IndexWriter(index,analyzer,true, IndexWriter.MaxFieldLength.UNLIMITED);
+        writerGeneral = new IndexWriter(index,config);
+
 
     }
     public void mergeIndexes() throws IOException {
@@ -426,7 +424,8 @@ public class ArchiveManager {
         Directory indexTmp = FSDirectory.open(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\Temporal"));
         writerGeneral.addIndexes(indexTmp);
         writerGeneral.optimize();
-        writerGeneral.close();
+
+
     }
 
     //Elimina los archivos
@@ -443,6 +442,7 @@ public class ArchiveManager {
 
 
     public void index_Files(String continent) throws IOException {
+
         deleteFiles(new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\" + continent));
         File indexDirectoryPath = new File("C:\\Users\\Marco\\Desktop\\Documentos TEC\\GeoIndexer\\JavaIndexer\\IndexConsult\\"+continent);
 
@@ -647,6 +647,7 @@ public class ArchiveManager {
         return result;
     }
     public void searchQuery() throws IOException {
+        Analyzer newAnalyzer = new SimpleAnalyzer(Version.LUCENE_36);
         System.out.println("***\tIntroduzca el index que desea buscar\t***");
         Scanner x = new Scanner(System.in);
         String dir = x.nextLine();
@@ -664,9 +665,9 @@ public class ArchiveManager {
                 Query q;
 
                 if (queries[i].type == SearchIn.BODY)
-                    q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"texto"}, analyzer).parse(queries[i].query);
+                    q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"texto"}, newAnalyzer).parse(queries[i].query);
                 else
-                    q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"ref"}, analyzer).parse(queries[i].query);
+                    q = new MultiFieldQueryParser(Version.LUCENE_36, new String[]{"ref"}, newAnalyzer).parse(queries[i].query);
 
                 System.out.println(q.toString());
                 //Create Lucene searcher
@@ -722,7 +723,7 @@ public class ArchiveManager {
 
     }
 
-        //Stemming ---------------------------------------------------------------------
+    //Stemming ---------------------------------------------------------------------
     public String removeStopWordsAndStem(String input) throws IOException {
         TokenStream tokenStream = new StandardTokenizer(
                 Version.LUCENE_36, new StringReader(input));
